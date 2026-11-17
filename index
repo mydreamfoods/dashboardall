@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDF Dashboard Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --side:#0f1b2d; --side-2:#16263d; --side-line:#22344f; --side-text:#a9b6c9; --side-hi:#ffffff;
+  --brand:#e8833a; --brand-2:#f4a261;
+  --bg:#f3f5f8; --card:#ffffff; --line:#e3e8ef; --text:#1b2533; --muted:#6b778a;
+  --ok:#1f9d6b; --warn:#c9822b;
+  --radius:12px; --sw:272px;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 14px rgba(16,24,40,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--text);background:var(--bg);font-size:14px;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input{font:inherit}
+svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Login ---------- */
+#login{position:fixed;inset:0;display:grid;grid-template-columns:1.1fr 1fr;background:var(--card);z-index:50}
+.login-art{background:linear-gradient(150deg,#0f1b2d 0%,#1d3557 60%,#274a73 100%);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.login-art:after{content:"";position:absolute;right:-120px;bottom:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(232,131,58,.35),transparent 65%)}
+.logo{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px;letter-spacing:.2px}
+.logo-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px}
+.login-art h1{font-size:36px;line-height:1.15;font-weight:700;max-width:420px}
+.login-art p{color:#c4d0e0;margin-top:14px;max-width:400px;line-height:1.6}
+.login-art small{color:#8fa0b8}
+.login-form{display:flex;align-items:center;justify-content:center;padding:40px}
+.login-box{width:100%;max-width:360px}
+.login-box h2{font-size:24px;font-weight:700}
+.login-box .sub{color:var(--muted);margin:6px 0 28px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;color:#3a4657}
+.field input{width:100%;height:44px;border:1px solid var(--line);border-radius:10px;padding:0 14px;background:#fafbfc;outline:none;transition:.15s}
+.field input:focus{border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px rgba(232,131,58,.15)}
+.btn-primary{width:100%;height:44px;border-radius:10px;background:var(--side);color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s}
+.btn-primary:hover{background:#1d3557}
+.btn-primary:disabled{opacity:.6;cursor:wait}
+.err{color:#c0392b;font-size:13px;min-height:20px;margin-top:12px}
+
+/* ---------- App shell ---------- */
+#app{display:none;height:100%}
+.shell{display:flex;height:100%}
+aside{width:var(--sw);background:var(--side);color:var(--side-text);display:flex;flex-direction:column;flex:none;transition:width .2s ease;overflow:hidden}
+.side-head{display:flex;align-items:center;justify-content:space-between;padding:18px 16px 14px}
+.side-head .logo{color:#fff;font-size:15.5px;white-space:nowrap}
+.side-head .logo-mark{width:34px;height:34px;font-size:13px}
+.icon-btn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;color:var(--side-text)}
+.icon-btn:hover{background:var(--side-2);color:#fff}
+.search{margin:0 14px 10px;position:relative}
+.search input{width:100%;height:38px;border-radius:9px;border:1px solid var(--side-line);background:var(--side-2);color:#fff;padding:0 50px 0 36px;outline:none}
+.search input::placeholder{color:#7487a3}
+.search input:focus{border-color:#3b5578}
+.search svg{position:absolute;left:11px;top:10px;width:17px;height:17px;color:#7487a3}
+.search kbd{position:absolute;right:9px;top:9px;font-size:10.5px;color:#7487a3;border:1px solid var(--side-line);border-radius:5px;padding:1px 5px;font-family:inherit}
+nav{flex:1;overflow-y:auto;padding:4px 10px 16px}
+nav::-webkit-scrollbar{width:6px}nav::-webkit-scrollbar-thumb{background:var(--side-line);border-radius:6px}
+.nav-home{margin-bottom:6px}
+.group{margin-top:12px}
+.group-h{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#6c80a0;width:100%}
+.group-h .chev{width:14px;height:14px;transition:transform .15s}
+.group.closed .chev{transform:rotate(-90deg)}
+.group.closed .items{display:none}
+.item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:8px;text-align:left;color:var(--side-text);white-space:nowrap;position:relative}
+.item:hover{background:var(--side-2);color:#fff}
+.item.active{background:linear-gradient(90deg,rgba(232,131,58,.22),rgba(232,131,58,.06));color:#fff}
+.item.active:before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;border-radius:3px;background:var(--brand)}
+.item .t{flex:1;overflow:hidden;text-overflow:ellipsis}
+.item .ext{width:14px;height:14px;opacity:.5}
+.item .badge{font-size:10px;padding:1px 6px;border-radius:20px;background:var(--side-line);color:#9fb0c8}
+.sub-item{padding-left:38px;font-size:13px}
+.empty-nav{padding:20px 10px;color:#6c80a0;font-size:13px}
+.side-foot{border-top:1px solid var(--side-line);padding:12px 14px;display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3b5578,#274a73);color:#fff;display:grid;place-items:center;font-weight:600;text-transform:uppercase;flex:none}
+.who{flex:1;min-width:0;line-height:1.25}
+.who b{color:#fff;font-weight:600;display:block;text-transform:capitalize;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who span{font-size:11.5px;color:#7487a3;text-transform:uppercase;letter-spacing:.5px}
+
+/* collapsed sidebar */
+body.collapsed aside{width:68px}
+body.collapsed .side-head .logo span,body.collapsed .search,body.collapsed .group-h,body.collapsed .item .t,
+body.collapsed .item .ext,body.collapsed .item .badge,body.collapsed .who,body.collapsed .sub-item{display:none}
+body.collapsed .side-head{flex-direction:column;gap:10px}
+body.collapsed .item{justify-content:center;padding:9px 0}
+body.collapsed .group{margin-top:6px}
+body.collapsed .group.closed .items{display:block}
+body.collapsed .side-foot{flex-direction:column}
+
+main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{height:60px;flex:none;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 20px}
+.topbar .menu{display:none;color:var(--text)}
+.crumb{flex:1;min-width:0}
+.crumb small{color:var(--muted);font-size:12px;display:block}
+.crumb h3{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-actions{display:flex;gap:6px}
+.tb-btn{height:36px;padding:0 12px;border:1px solid var(--line);border-radius:9px;display:flex;align-items:center;gap:7px;font-weight:500;color:#3a4657;background:#fff}
+.tb-btn:hover{border-color:#c8d1dd;background:#f8fafc}
+.tb-btn svg{width:16px;height:16px}
+.tb-btn.star.on{color:var(--brand);border-color:#f3c9a5;background:#fff8f2}
+.tb-btn.star.on svg{fill:var(--brand)}
+
+.view{flex:1;position:relative;overflow:hidden}
+#home{position:absolute;inset:0;overflow-y:auto;padding:28px 32px 40px}
+#frameWrap{position:absolute;inset:0;display:none;background:#fff}
+#frame{width:100%;height:100%;border:0;display:block}
+.loader{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:#fff;color:var(--muted)}
+.spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.frame-note{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:var(--side);color:#dce4ef;padding:10px 14px;border-radius:10px;font-size:13px;display:none;align-items:center;gap:10px;box-shadow:var(--shadow);z-index:3}
+.frame-note button{color:var(--brand-2);font-weight:600}
+.frame-note .x{color:#7487a3}
+
+/* ---------- Home ---------- */
+.hello h1{font-size:24px;font-weight:700}
+.hello p{color:var(--muted);margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:22px 0 28px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+.stat small{color:var(--muted);font-size:12px;font-weight:500}
+.stat b{display:block;font-size:26px;font-weight:700;margin-top:4px}
+.sec-h{display:flex;align-items:center;justify-content:space-between;margin:26px 0 12px}
+.sec-h h2{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.sec-h h2 i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.sec-h span{color:var(--muted);font-size:12.5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;text-align:left;display:flex;flex-direction:column;gap:12px;transition:.15s;box-shadow:var(--shadow);position:relative}
+.card:hover{border-color:#cfd7e2;transform:translateY(-2px);box-shadow:0 8px 24px rgba(16,24,40,.09)}
+.card-top{display:flex;align-items:center;gap:12px;padding-right:26px}
+.ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;flex:none}
+.ic svg{width:20px;height:20px}
+.card h4{font-size:14px;font-weight:600;line-height:1.3}
+.card .host{font-size:11.5px;color:var(--muted);margin-top:2px}
+.card .desc{color:var(--muted);font-size:12.5px;line-height:1.5;min-height:18px}
+.card-foot{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:10px}
+.card-foot .go{color:var(--text);font-weight:600;display:flex;align-items:center;gap:4px}
+.card-foot .go svg{width:14px;height:14px}
+.pin{position:absolute;top:12px;right:12px;color:#c3ccd8;width:28px;height:28px;border-radius:7px;display:grid;place-items:center}
+.pin:hover{background:#f3f5f8;color:var(--brand)}
+.pin.on{color:var(--brand)}.pin.on svg{fill:var(--brand)}
+.pin svg{width:16px;height:16px}
+.no-res{padding:40px;text-align:center;color:var(--muted);background:var(--card);border:1px dashed var(--line);border-radius:var(--radius)}
+
+.toast{position:fixed;right:20px;bottom:20px;background:var(--side);color:#fff;padding:11px 16px;border-radius:10px;font-size:13px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);transition:.2s;pointer-events:none;z-index:60}
+.toast.show{opacity:1;transform:none}
+.scrim{display:none}
+
+@media (max-width:1000px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:860px){
+  #login{grid-template-columns:1fr}.login-art{display:none}
+  aside{position:fixed;left:0;top:0;bottom:0;z-index:40;transform:translateX(-100%);transition:transform .2s}
+  body.mnav aside{transform:none}
+  body.mnav .scrim{display:block;position:fixed;inset:0;background:rgba(15,27,45,.45);z-index:35}
+  body.collapsed aside{width:var(--sw)}
+  .topbar .menu{display:grid}
+  #collapseBtn{display:none}
+  .tb-btn .lbl{display:none}
+  #home{padding:20px 16px 32px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section id="login">
+  <div class="login-art">
+    <div class="logo"><div class="logo-mark">MDF</div>My Dream Foods</div>
+    <div>
+      <h1>Every dashboard. One place.</h1>
+      <p>Stock, production, sales, checklists and reports for Saraswati, Mayank Foods, My Dream Foods and Bicholi — opened from a single sidebar, filtered to your role.</p>
+    </div>
+    <small>© My Dream Foods Ltd · Indore</small>
+  </div>
+  <div class="login-form">
+    <form class="login-box" id="loginForm" autocomplete="on">
+      <h2>Sign in</h2>
+      <p class="sub">Use your MDF dashboard credentials</p>
+      <div class="field"><label for="u">User</label><input id="u" name="username" autocomplete="username" required></div>
+      <div class="field"><label for="p">Password</label><input id="p" name="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn-primary" id="loginBtn" type="submit">Sign in</button>
+      <div class="err" id="loginErr"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<section id="app">
+  <div class="shell">
+    <aside>
+      <div class="side-head">
+        <div class="logo"><div class="logo-mark">MDF</div><span>Dashboard Hub</span></div>
+        <button class="icon-btn" id="collapseBtn" title="Collapse sidebar">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+        </button>
+      </div>
+      <div class="search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" placeholder="Search dashboards" autocomplete="off">
+        <kbd>Ctrl K</kbd>
+      </div>
+      <nav id="nav"></nav>
+      <div class="side-foot">
+        <div class="avatar" id="av">A</div>
+        <div class="who"><b id="whoName">admin</b><span id="whoRole">admin</span></div>
+        <button class="icon-btn" id="logoutBtn" title="Sign out">
+          <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h12"/></svg>
+        </button>
+      </div>
+    </aside>
+    <div class="scrim" id="scrim"></div>
+
+    <main>
+      <div class="topbar">
+        <button class="icon-btn menu" id="menuBtn"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+        <div class="crumb"><small id="crumbCat">Overview</small><h3 id="crumbTitle">Home</h3></div>
+        <div class="tb-actions" id="frameActions" style="display:none">
+          <button class="tb-btn star" id="starBtn" title="Pin to favourites"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></button>
+          <button class="tb-btn" id="reloadBtn" title="Reload"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg><span class="lbl">Reload</span></button>
+          <button class="tb-btn" id="fullBtn" title="Full screen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="lbl">Full screen</span></button>
+          <button class="tb-btn" id="newTabBtn" title="Open in new tab"><svg viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg><span class="lbl">New tab</span></button>
+        </div>
+      </div>
+
+      <div class="view">
+        <div id="home"></div>
+        <div id="frameWrap">
+          <iframe id="frame" title="Dashboard" allow="clipboard-write; fullscreen" allowfullscreen></iframe>
+          <div class="loader" id="loader"><div class="spin"></div><span>Loading dashboard…</span></div>
+          <div class="frame-note" id="frameNote">
+            <span>Page blank? Some Google pages block embedding.</span>
+            <button id="noteOpen">Open in new tab</button>
+            <button class="x" id="noteX">✕</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= CONFIG ================= */
+// Paste your Apps Script Web App URL (ends with /exec)
+const API_URL = 'https://script.google.com/macros/s/AKfycbxbVNVS2ca2S24d_ML7hn6tgJrZj080SkosryXu2M_Km0KPGKimwOSw1cS0wy2x4Vg9NA/exec';
+
+// Hosts that refuse to load inside an iframe → open in a new tab directly
+const NEW_TAB_HOSTS = ['script.google.com', 'docs.google.com/forms'];
+
+// Sidebar groups — first matching rule wins (matched against title, lower-case)
+const GROUPS = [
+  { name: 'Unit Dashboards',     color: '#2f6fd6', icon: 'building', match: /^(saraswati dashboard|mayank foods|my dream foods|bicholi)/ },
+  { name: 'Stock & Inventory',   color: '#1f9d6b', icon: 'box',      match: /stock|full kitting|guard vs|unloading/ },
+  { name: 'Sales & Orders',      color: '#e8833a', icon: 'cart',     match: /sales|order|invoice|quotation|sauda|scot|quiz/ },
+  { name: 'Production',          color: '#8b5cf6', icon: 'factory',  match: /production/ },
+  { name: 'Checklists & EA',     color: '#0ea5a4', icon: 'check',    match: /checklist|ea dashboard/ },
+  { name: 'HR & Admin',          color: '#d9467a', icon: 'users',    match: /hr|employee|wage|system master/ },
+  { name: 'Other',               color: '#64748b', icon: 'grid',     match: /.*/ }
+];
+
+const ICONS = {
+  home:'<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>',
+  star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  building:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2M10 21v-3h4v3"/>',
+  box:'<path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>',
+  cart:'<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 4h2l2.4 11h11l2-8H6.2"/>',
+  factory:'<path d="M3 21V10l6 4V10l6 4V6h6v15Z"/><path d="M7 18h2M12 18h2M17 18h2"/>',
+  check:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+  users:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.5 6-5.5s5.4 2.1 6 5.5"/><path d="M16 4.5a3 3 0 0 1 0 6M21 20c-.4-2.6-1.8-4.4-3.8-5.1"/>',
+  grid:'<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  link:'<path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
+  arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  chev:'<path d="m6 9 6 6 6-6"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
+};
+const svg = (n, cls='') => `<svg class="${cls}" viewBox="0 0 24 24">${ICONS[n]}</svg>`;
+
+/* ================= STORAGE (safe) ================= */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem('mdfhub_'+k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem('mdfhub_'+k, JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem('mdfhub_'+k); }catch(e){} }
+};
+
+/* ================= STATE ================= */
+let S = { token:null, user:'', role:'', items:[], current:null, query:'' };
+
+/* ================= API (JSONP) ================= */
+function api(params){
+  return new Promise((resolve, reject) => {
+    if (!/^https:\/\/script\.google/.test(API_URL)) return reject(new Error('Set API_URL in index.html'));
+    const cb = 'cb_' + Date.now() + '_' + Math.floor(Math.random()*1e5);
+    const s = document.createElement('script');
+    const t = setTimeout(() => { cleanup(); reject(new Error('Server not responding')); }, 20000);
+    function cleanup(){ clearTimeout(t); delete window[cb]; s.remove(); }
+    window[cb] = d => { cleanup(); resolve(d); };
+    s.onerror = () => { cleanup(); reject(new Error('Cannot reach Apps Script — check Web App URL / access')); };
+    // Script loaded but callback never fired → GAS returned a login/HTML page
+    s.onload = () => setTimeout(() => { if (window[cb]) { cleanup();
+      reject(new Error('Apps Script access denied — set Web App access to "Anyone"')); } }, 1500);
+    s.src = API_URL + '?' + new URLSearchParams({ ...params, callback: cb, _: Date.now() });
+    document.body.appendChild(s);
+  });
+}
+
+/* ================= HELPERS ================= */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function groupOf(item){ const t = item.title.toLowerCase(); return GROUPS.find(g => g.match.test(t)); }
+function hostLabel(url){
+  try{
+    const u = new URL(url);
+    if (u.hostname.includes('datastudio') || u.hostname.includes('lookerstudio')) return 'Looker Studio';
+    if (u.hostname.includes('script.google')) return 'Apps Script';
+    if (u.hostname.includes('github.io')) return u.pathname.replace(/^\/|\/$/g,'').split('/')[0] || 'Web app';
+    return u.hostname;
+  }catch(e){ return 'Link'; }
+}
+function opensNewTab(url){ return NEW_TAB_HOSTS.some(h => url.includes(h)); }
+function embedUrl(url){
+  // Looker Studio needs /embed/ to load inside an iframe
+  return url.replace(/(datastudio|lookerstudio)\.google\.com\/reporting\//, '$1.google.com/embed/reporting/');
+}
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2200); }
+function favs(){ return store.get('fav_'+S.user, []); }
+function recents(){ return store.get('recent_'+S.user, []); }
+function byId(id){ return S.items.find(x => String(x.id) === String(id)); }
+
+/* ================= LOGIN ================= */
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('loginBtn'), err = $('loginErr');
+  err.textContent = ''; btn.disabled = true; btn.textContent = 'Signing in…';
+  try{
+    const r = await api({ action:'login', user:$('u').value.trim(), pass:$('p').value.trim() });
+    if (!r.ok) throw new Error(r.error || 'Login failed');
+    store.set('session', { token:r.token, user:r.user, role:r.role });
+    await boot(r.token);
+  }catch(ex){ err.textContent = ex.message; }
+  finally{ btn.disabled = false; btn.textContent = 'Sign in'; }
+});
+
+async function boot(token){
+  const r = await api({ action:'dashboards', token });
+  if (!r.ok){
+    store.del('session');
+    throw new Error(r.error === 'SESSION_EXPIRED' ? 'Session expired, sign in again' : r.error);
+  }
+  S.token = token; S.user = r.user; S.role = r.role; S.items = r.dashboards || [];
+  $('login').style.display = 'none'; $('app').style.display = 'block';
+  $('whoName').textContent = S.user; $('whoRole').textContent = S.role;
+  $('av').textContent = S.user.charAt(0);
+  if (store.get('collapsed', false)) document.body.classList.add('collapsed');
+  renderNav(); route();
+}
+
+function logout(){
+  store.del('session'); S = { token:null, user:'', role:'', items:[], current:null, query:'' };
+  $('frame').src = 'about:blank'; location.hash = '';
+  $('app').style.display = 'none'; $('login').style.display = 'grid'; $('p').value = '';
+}
+$('logoutBtn').onclick = logout;
+
+/* ================= SIDEBAR ================= */
+function renderNav(){
+  const q = S.query.toLowerCase();
+  const list = S.items.filter(x => !q || (x.title+' '+x.description+' '+hostLabel(x.link)).toLowerCase().includes(q));
+  const closed = store.get('closedGroups', []);
+  const f = favs();
+  let html = '';
+
+  if (!q){
+    html += `<div class="nav-home"><button class="item ${!S.current?'active':''}" data-home="1">${svg('home')}<span class="t">Home</span></button></div>`;
+    const favItems = f.map(byId).filter(Boolean);
+    if (favItems.length) html += groupHtml({ name:'Favourites', icon:'star' }, favItems, closed, 'fav');
+  }
+  GROUPS.forEach(g => {
+    const items = list.filter(x => groupOf(x) === g);
+    if (items.length) html += groupHtml(g, items, q ? [] : closed);
+  });
+  if (!list.length) html += `<div class="empty-nav">No dashboard matches “${esc(S.query)}”.</div>`;
+  $('nav').innerHTML = html;
+}
+
+function groupHtml(g, items, closed, key){
+  const k = key || g.name;
+  return `<div class="group ${closed.includes(k)?'closed':''}" data-g="${esc(k)}">
+    <button class="group-h" data-toggle="${esc(k)}"><span>${esc(g.name)}</span>${svg('chev','chev')}</button>
+    <div class="items">${items.map(x => itemHtml(x, g)).join('')}</div></div>`;
+}
+
+function itemHtml(x, g){
+  const ext = opensNewTab(x.link);
+  const active = S.current && String(S.current.id) === String(x.id) && !S.current.extra;
+  let h = `<button class="item ${active?'active':''}" data-id="${x.id}" title="${esc(x.title)}">
+    ${svg(groupOf(x).icon)}<span class="t">${esc(x.title)}</span>${ext?svg('link','ext'):''}</button>`;
+  return h;
+}
+
+$('nav').addEventListener('click', e => {
+  const tg = e.target.closest('[data-toggle]');
+  if (tg){
+    const k = tg.dataset.toggle; let c = store.get('closedGroups', []);
+    c = c.includes(k) ? c.filter(x=>x!==k) : [...c, k];
+    store.set('closedGroups', c); tg.parentElement.classList.toggle('closed'); return;
+  }
+  const it = e.target.closest('.item'); if (!it) return;
+  document.body.classList.remove('mnav');
+  if (it.dataset.home) { location.hash = ''; return; }
+  open(it.dataset.id, it.dataset.extra != null ? +it.dataset.extra : null);
+});
+
+/* ================= OPEN DASHBOARD ================= */
+function open(id, extra=null){
+  const x = byId(id); if (!x) return;
+  const target = extra != null ? x.extras[extra] : x;
+  if (opensNewTab(target.link)){ window.open(target.link, '_blank', 'noopener'); toast('Opened in a new tab'); return; }
+  location.hash = 'd=' + id + (extra != null ? '&e=' + extra : '');
+}
+
+function route(){
+  const h = new URLSearchParams(location.hash.slice(1));
+  const x = h.get('d') && byId(h.get('d'));
+  if (!x){ showHome(); return; }
+  const extra = h.get('e') != null ? +h.get('e') : null;
+  const target = extra != null && x.extras[extra] ? x.extras[extra] : x;
+  S.current = { id:x.id, extra:extra != null && x.extras[extra] ? extra : null, title:target.title, link:target.link };
+
+  $('home').style.display = 'none'; $('frameWrap').style.display = 'block'; $('frameActions').style.display = 'flex';
+  $('crumbCat').textContent = groupOf(x).name + (S.current.extra!=null ? ' · ' + x.title : '');
+  $('crumbTitle').textContent = target.title;
+  document.title = target.title + ' · MDF Hub';
+  $('starBtn').classList.toggle('on', favs().includes(x.id));
+
+  const src = embedUrl(target.link);
+  if ($('frame').dataset.src !== src){
+    $('loader').style.display = 'flex'; $('frameNote').style.display = 'none';
+    $('frame').dataset.src = src; $('frame').src = src;
+    clearTimeout(window._noteT);
+    window._noteT = setTimeout(() => { if (/google\.com/.test(src)) $('frameNote').style.display = 'flex'; }, 4000);
+  }
+  let r = recents().filter(i => i !== x.id); r.unshift(x.id); store.set('recent_'+S.user, r.slice(0,6));
+  renderNav();
+}
+
+function showHome(){
+  S.current = null; document.title = 'MDF Dashboard Hub';
+  $('frameWrap').style.display = 'none'; $('frameActions').style.display = 'none'; $('home').style.display = 'block';
+  $('crumbCat').textContent = 'Overview'; $('crumbTitle').textContent = 'Home';
+  renderHome(); renderNav();
+}
+
+$('frame').addEventListener('load', () => { $('loader').style.display = 'none'; });
+window.addEventListener('hashchange', () => { if (S.token) route(); });
+
+/* ================= HOME ================= */
+function renderHome(){
+  const hr = new Date().getHours();
+  const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+  const f = favs().map(byId).filter(Boolean);
+  const rc = recents().map(byId).filter(Boolean);
+  const groups = GROUPS.map(g => ({ g, items:S.items.filter(x => groupOf(x)===g) })).filter(o => o.items.length);
+  const looker = S.items.filter(x => /datastudio|lookerstudio/.test(x.link)).length;
+  const date = new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  let h = `<div class="hello"><h1>${greet}, <span style="text-transform:capitalize">${esc(S.user)}</span></h1><p>${date} · Pick a dashboard from the sidebar or below.</p></div>
+  <div class="stats">
+    <div class="stat"><small>Dashboards available</small><b>${S.items.length}</b></div>
+    <div class="stat"><small>Categories</small><b>${groups.length}</b></div>
+    <div class="stat"><small>Looker Studio reports</small><b>${looker}</b></div>
+    <div class="stat"><small>Favourites</small><b>${f.length}</b></div>
+  </div>`;
+
+  if (rc.length) h += section('Recently opened', '#64748b', rc, 'clock');
+  if (f.length) h += section('Favourites', '#e8833a', f, 'star');
+  groups.forEach(o => { h += section(o.g.name, o.g.color, o.items); });
+  if (!S.items.length) h += `<div class="no-res">No dashboards are assigned to your role yet. Ask admin to add your role in the Dashboards sheet.</div>`;
+  $('home').innerHTML = h;
+}
+
+function section(name, color, items){
+  return `<div class="sec-h"><h2><i style="background:${color}"></i>${esc(name)}</h2><span>${items.length}</span></div>
+  <div class="grid">${items.map(cardHtml).join('')}</div>`;
+}
+
+function cardHtml(x){
+  const g = groupOf(x), on = favs().includes(x.id), ext = opensNewTab(x.link);
+  const desc = x.description && x.description !== x.title ? x.description : '';
+  return `<div class="card" data-open="${x.id}" role="button" tabindex="0">
+    <button class="pin ${on?'on':''}" data-pin="${x.id}" title="${on?'Unpin':'Pin'}">${svg('star')}</button>
+    <div class="card-top"><div class="ic" style="background:${g.color}14;color:${g.color}">${svg(g.icon)}</div>
+      <div><h4>${esc(x.title)}</h4><div class="host">${esc(hostLabel(x.link))}</div></div></div>
+    ${desc?`<div class="desc">${esc(desc)}</div>`:''}
+    <div class="card-foot"><span>${esc(g.name)}</span><span class="go">${ext?'New tab':'Open'} ${svg(ext?'link':'arrow')}</span></div>
+  </div>`;
+}
+
+$('home').addEventListener('click', e => {
+  const p = e.target.closest('[data-pin]');
+  if (p){ e.stopPropagation(); togglePin(+p.dataset.pin); renderHome(); return; }
+  const c = e.target.closest('[data-open]'); if (c) open(c.dataset.open);
+});
+$('home').addEventListener('keydown', e => { if (e.key==='Enter'){ const c=e.target.closest('[data-open]'); if (c) open(c.dataset.open); } });
+
+function togglePin(id){
+  let f = favs(); const on = f.includes(id);
+  f = on ? f.filter(x=>x!==id) : [...f, id]; store.set('fav_'+S.user, f);
+  toast(on ? 'Removed from favourites' : 'Pinned to favourites'); renderNav();
+}
+
+/* ================= TOOLBAR ================= */
+$('starBtn').onclick = () => { if (!S.current) return; togglePin(S.current.id); $('starBtn').classList.toggle('on', favs().includes(S.current.id)); };
+$('reloadBtn').onclick = () => { if (!S.current) return; $('loader').style.display='flex'; const s=$('frame').dataset.src; $('frame').src='about:blank'; setTimeout(()=>$('frame').src=s,50); };
+$('newTabBtn').onclick = () => S.current && window.open(S.current.link, '_blank', 'noopener');
+$('noteOpen').onclick = () => S.current && window.open(S.current.link, '_blank', 'noopener');
+$('noteX').onclick = () => $('frameNote').style.display = 'none';
+$('fullBtn').onclick = () => { const w=$('frameWrap'); (w.requestFullscreen||w.webkitRequestFullscreen||function(){}).call(w); };
+$('collapseBtn').onclick = () => { document.body.classList.toggle('collapsed'); store.set('collapsed', document.body.classList.contains('collapsed')); };
+$('menuBtn').onclick = () => document.body.classList.add('mnav');
+$('scrim').onclick = () => document.body.classList.remove('mnav');
+
+$('q').addEventListener('input', e => { S.query = e.target.value.trim(); renderNav(); });
+$('q').addEventListener('keydown', e => {
+  if (e.key === 'Enter'){ const first = $('nav').querySelector('.item[data-id]'); if (first) first.click(); }
+  if (e.key === 'Escape'){ e.target.value=''; S.query=''; renderNav(); e.target.blur(); }
+});
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k' && S.token){
+    e.preventDefault(); document.body.classList.remove('collapsed'); $('q').focus(); $('q').select();
+  }
+});
+
+/* ================= AUTO-LOGIN ================= */
+(async () => {
+  const s = store.get('session', null);
+  if (s && s.token){
+    try{ await boot(s.token); }catch(e){ $('loginErr').textContent = e.message; }
+  }
+})();
+</script>
+</body>
+</html>
